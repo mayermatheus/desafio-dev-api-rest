@@ -11,6 +11,17 @@ async function createAccount(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+async function patchAccount(req: Request, res: Response, next: NextFunction) {
+  try {
+    await (new AccountService()).patchAccount(req.params.id, req.body);
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+}
+
 export default {
   createAccount,
+  patchAccount,
 };

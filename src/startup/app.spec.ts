@@ -7,9 +7,10 @@ import { repositoryMock } from '@domain/test/mocks/typeorm.mock';
 import { CreateCustomerBody } from '@domain/customer/v1/interfaces/create-customer-body';
 import { CreateCustomerResponse } from '@domain/customer/v1/interfaces/create-customer-response';
 import { CreateAccountBody } from '@domain/account/v1/interfaces/create-account-body';
-import { CreateAccountResponse } from '@domain/account/v1/interfaces/create-account-response';
+import { AccountResponse } from '@domain/account/v1/interfaces/account-response';
 import { fakeAccountStatus } from '@domain/test/mocks/account.mock';
 import Config from '@config/app-config';
+import { PatchAccountBody } from '@domain/account/v1/interfaces/patch-account-body';
 
 const app = new App().express;
 
@@ -129,7 +130,7 @@ describe('Spec integration app', () => {
       number: faker.datatype.number(),
       status: fakeAccountStatus(),
       value: faker.datatype.number(),
-    } as CreateAccountResponse;
+    } as AccountResponse;
 
     repositoryMock.findOne.mockResolvedValue(customer);
     repositoryMock.save.mockResolvedValue(createAccountResponseMock);
@@ -162,5 +163,58 @@ describe('Spec integration app', () => {
     expect(response.status).toBe(404);
     expect(responseData).toBeTruthy();
     expect(responseData).toEqual({ code: 1002, message: 'Customer not found', exception: '' });
+  });
+
+  test('Should response 204 when called http method patch and access /api/v1/accounts/:id', async () => {
+    const nationalRegistration = cpf.generate();
+    const status = fakeAccountStatus();
+    const patchAccountBodyMock = {
+      status,
+    } as PatchAccountBody;
+    const customer = {
+      id: faker.datatype.uuid(),
+      name: faker.datatype.string(),
+      nationalRegistration,
+    } as CreateCustomerResponse
+    const account = {
+      id: faker.datatype.uuid(),
+      agency: Config.BANK_INFO.agencyNumber,
+      customer,
+      dailyWithDrawalLimit: Config.BANK_INFO.defaultLimitPerDaily,
+      isActive: faker.datatype.boolean(),
+      number: faker.datatype.number(),
+      status,
+      value: faker.datatype.number(),
+    } as AccountResponse;
+
+    repositoryMock.findOne.mockResolvedValue(account);
+
+    const response = await supertest(app)
+      .patch(`/api/v1/accounts/${account.id}`)
+      .send(patchAccountBodyMock)
+
+    const responseData = response.body;
+
+    expect(response.status).toBe(204);
+    expect(responseData).toBeTruthy();
+    expect(responseData).toEqual({});
+  });
+
+  test('Should response 404 when called http method patch and access /api/v1/accounts/:id and id not exist', async () => {
+    const patchAccountBodyMock = {
+      status: fakeAccountStatus(),
+    } as PatchAccountBody;
+
+    repositoryMock.findOne.mockResolvedValue(null);
+
+    const response = await supertest(app)
+      .patch(`/api/v1/accounts/${faker.datatype.uuid()}`)
+      .send(patchAccountBodyMock)
+
+    const responseData = response.body;
+
+    expect(response.status).toBe(404);
+    expect(responseData).toBeTruthy();
+    expect(responseData).toEqual({ code: 3001, message: 'Account not found', exception: '' });
   });
 });

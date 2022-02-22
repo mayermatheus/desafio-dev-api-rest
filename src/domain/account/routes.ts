@@ -1,4 +1,4 @@
-import { validateBody } from '../../middlewares/validation';
+import { validateBody, validateParams } from '../../middlewares/validation';
 import accountController from './v1/controllers/account-controller';
 import validation from './v1/validations';
 
@@ -9,6 +9,16 @@ export default [
     handlers: [
       validateBody(validation.createAccountBody),
       accountController.createAccount,
+    ],
+  },
+
+  {
+    method: 'patch',
+    path: '/v1/accounts/:id',
+    handlers: [
+      validateParams(validation.patchAccountParam),
+      validateBody(validation.patchAccountBody),
+      accountController.patchAccount,
     ],
   },
 ];
