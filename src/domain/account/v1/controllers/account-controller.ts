@@ -21,7 +21,18 @@ async function patchAccount(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+async function creditOfAccount(req: Request, res: Response, next: NextFunction) {
+  try {
+    const account = await (new AccountService()).creditOfAccount(req.params.id, req.body);
+
+    res.status(201).send(account);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export default {
   createAccount,
   patchAccount,
+  creditOfAccount,
 };

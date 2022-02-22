@@ -3,7 +3,7 @@ import { cpf } from 'cpf-cnpj-validator';
 import faker from 'faker';
 import supertest from 'supertest';
 import App from './app';
-import { repositoryMock } from '@domain/test/mocks/typeorm.mock';
+import { repositoryMock, selectQueryBuilderMock } from '@domain/test/mocks/typeorm.mock';
 import { CreateCustomerBody } from '@domain/customer/v1/interfaces/create-customer-body';
 import { CreateCustomerResponse } from '@domain/customer/v1/interfaces/create-customer-response';
 import { CreateAccountBody } from '@domain/account/v1/interfaces/create-account-body';
@@ -11,6 +11,7 @@ import { AccountResponse } from '@domain/account/v1/interfaces/account-response'
 import { fakeAccountStatus } from '@domain/test/mocks/account.mock';
 import Config from '@config/app-config';
 import { PatchAccountBody } from '@domain/account/v1/interfaces/patch-account-body';
+import Account from '@domain/account/v1/entities/account';
 
 const app = new App().express;
 
@@ -19,6 +20,10 @@ describe('Spec integration app', () => {
   beforeEach(() => {
     moxios.install();
     repositoryMock.findOne.mockRestore();
+    repositoryMock.createQueryBuilder.mockRestore();
+    selectQueryBuilderMock.leftJoinAndSelect.mockRestore();
+    selectQueryBuilderMock.where.mockRestore();
+    selectQueryBuilderMock.getOne.mockRestore();
     repositoryMock.save.mockRestore();
   });
 
@@ -185,9 +190,19 @@ describe('Spec integration app', () => {
       number: faker.datatype.number(),
       status,
       value: faker.datatype.number(),
-    } as AccountResponse;
+      transactions: [],
+    } as Account;
 
-    repositoryMock.findOne.mockResolvedValue(account);
+    selectQueryBuilderMock
+      .leftJoinAndSelect
+      .mockReturnThis()
+      .mockReturnThis();
+
+    selectQueryBuilderMock.where.mockReturnThis();
+
+    selectQueryBuilderMock.getOne.mockResolvedValue(account);
+    
+    repositoryMock.createQueryBuilder.mockReturnValue(selectQueryBuilderMock);
 
     const response = await supertest(app)
       .patch(`/api/v1/accounts/${account.id}`)
@@ -205,7 +220,16 @@ describe('Spec integration app', () => {
       status: fakeAccountStatus(),
     } as PatchAccountBody;
 
-    repositoryMock.findOne.mockResolvedValue(null);
+    selectQueryBuilderMock
+      .leftJoinAndSelect
+      .mockReturnThis()
+      .mockReturnThis();
+
+    selectQueryBuilderMock.where.mockReturnThis();
+
+    selectQueryBuilderMock.getOne.mockResolvedValue(null);
+    
+    repositoryMock.createQueryBuilder.mockReturnValue(selectQueryBuilderMock);
 
     const response = await supertest(app)
       .patch(`/api/v1/accounts/${faker.datatype.uuid()}`)

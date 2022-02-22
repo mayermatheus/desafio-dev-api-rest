@@ -11,7 +11,6 @@ export default [
       accountController.createAccount,
     ],
   },
-
   {
     method: 'patch',
     path: '/v1/accounts/:id',
@@ -19,6 +18,15 @@ export default [
       validateParams(validation.patchAccountParam),
       validateBody(validation.patchAccountBody),
       accountController.patchAccount,
+    ],
+  },
+  {
+    method: 'post',
+    path: '/v1/accounts/:id/credits',
+    handlers: [
+      validateParams(validation.createCreditAccountParam),
+      validateBody(validation.createCreditAccountBody),
+      accountController.creditOfAccount,
     ],
   },
 ];
