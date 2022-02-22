@@ -1,3 +1,40 @@
+# Passos para execução local
+Collection: https://www.getpostman.com/collections/f6d77a6f523571759d9d
+
+Instalar as bibliotecas do projeto através do comando abaixo
+```
+yarn install
+```
+Criar o arquivo .env na raiz copiando os valores das env's do arquivo .env.example.
+
+Criar o banco de dados chamando bank (Como ponto de **melhoria** poderíamos ter criado esse banco em um script no docker-compose)
+
+Rodar o comando abaixo para executar os testes (Foram implementados apenas os testes de ***integração***)
+```
+yarn test
+```
+
+Para subir o servidor, é necessário executar o comando abaixo: (É necessário preencher os valores no arquivo .env conforme exemplificado no arquivo .env.example)
+```
+yarn dev
+```
+
+Observação: O comando acima irá executar as migrações. Em ambiente de produção não é recomendável essa prática. No caso, deveria ser colocado um step no ci/cd para efetuar a migração e não ficar na responsabilidade da subida do servidor.
+
+Observações:
+- Não foi implementado a funcionalidade de deposito.
+- Não foi implementado testes unitários
+- Não foi implementado a busca da conta pelos parâmetros: número e agência
+- Não foi implementado a consulta por extrato (Neste ponto, dependendo do range da consulta, deveria ser implementado uma forma assincrona do envio de dados pelo email por exemplo.)
+
+Pontos de melhorias:
+- Retirar a utilização da classe error e utilizar outra estratégia de tratamento de errors. Pois a classe Error do javascript é utilizada para emitir exceções, e como regras de negócios não são exeções, há outras maneiras de realizar essa estratégia.
+- Dividir em microservices, visto que há responsabilidades bem divididas, como também a forma de escalar.
+- Adicionar testes unitários
+- Utilizar o sonar na pipeline para verificar bug's, vulnerabilidades, codigo duplicados e coverage
+- Como foi apenas um teste, não foi pensado na questão de autenticação, mas há rotas que sabemos que poderíamos pegar dados do usuário logado no token.
+- Adicionar um error handling para não ser preciso repetir código nos services para tratamento de erros de negocio e erros de exceções.
+- Utilização do docker e docker-compose para gerenciar as dependencias de infra
 # Cenário
 
 A Dock está crescendo e expandindo seus negócios, gerando novas oportunidades de revolucionar o mercado financeiro e criar produtos diferenciados.
