@@ -6,6 +6,10 @@ import App from './app';
 import { repositoryMock } from '@domain/test/mocks/typeorm.mock';
 import { CreateCustomerBody } from '@domain/customer/v1/interfaces/create-customer-body';
 import { CreateCustomerResponse } from '@domain/customer/v1/interfaces/create-customer-response';
+import { CreateAccountBody } from '@domain/account/v1/interfaces/create-account-body';
+import { CreateAccountResponse } from '@domain/account/v1/interfaces/create-account-response';
+import { fakeAccountStatus } from '@domain/test/mocks/account.mock';
+import Config from '@config/app-config';
 
 const app = new App().express;
 
@@ -101,6 +105,62 @@ describe('Spec integration app', () => {
     const responseData = response.body;
 
     expect(response.status).toBe(404);
+    expect(responseData).toEqual({ code: 1002, message: 'Customer not found', exception: '' });
+  });
+
+  test('Should response 201 when called http method post and access /api/v1/accounts/', async () => {
+    const nationalRegistration = cpf.generate();
+    const createAccountBodyMock = {
+      nationalRegistration,
+    } as CreateAccountBody;
+
+    const customer = {
+      id: faker.datatype.uuid(),
+      name: faker.datatype.string(),
+      nationalRegistration,
+    } as CreateCustomerResponse
+
+    const createAccountResponseMock = {
+      id: faker.datatype.uuid(),
+      agency: Config.BANK_INFO.agencyNumber,
+      customer,
+      dailyWithDrawalLimit: Config.BANK_INFO.defaultLimitPerDaily,
+      isActive: faker.datatype.boolean(),
+      number: faker.datatype.number(),
+      status: fakeAccountStatus(),
+      value: faker.datatype.number(),
+    } as CreateAccountResponse;
+
+    repositoryMock.findOne.mockResolvedValue(customer);
+    repositoryMock.save.mockResolvedValue(createAccountResponseMock);
+
+    const response = await supertest(app)
+      .post('/api/v1/accounts')
+      .send(createAccountBodyMock)
+
+    const responseData = response.body;
+
+    expect(response.status).toBe(201);
+    expect(responseData).toBeTruthy();
+    expect(responseData).toEqual(createAccountResponseMock);
+  });
+
+  test('Should response 404 when called http method post and access /api/v1/accounts/ and customer not found', async () => {
+    const nationalRegistration = cpf.generate();
+    const createAccountBodyMock = {
+      nationalRegistration,
+    } as CreateAccountBody;
+
+    repositoryMock.findOne.mockResolvedValue(null);
+
+    const response = await supertest(app)
+      .post('/api/v1/accounts')
+      .send(createAccountBodyMock)
+
+    const responseData = response.body;
+
+    expect(response.status).toBe(404);
+    expect(responseData).toBeTruthy();
     expect(responseData).toEqual({ code: 1002, message: 'Customer not found', exception: '' });
   });
 });

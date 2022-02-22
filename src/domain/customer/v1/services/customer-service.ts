@@ -14,10 +14,7 @@ class CustomerService {
     try {
       const customerRepository = getRepository(Customer);
 
-      const customerFound = await customerRepository.findOne({
-        nationalRegistration: createCustomerBody.nationalRegistration,
-        isActive: true,
-      });
+      const customerFound = await this.getCustomerByNationalRegistration(createCustomerBody.nationalRegistration)
 
       if (customerFound) {
         throw new NationalRegistrationDuplicatedError();
@@ -58,6 +55,21 @@ class CustomerService {
         throw error;
       }
 
+      throw new HttpError(500, ServerCodeErrorEnum.INTERNAL_SERVER_ERROR, 'INTERNAL SERVER ERROR', null, error);
+    }
+  }
+
+  public async getCustomerByNationalRegistration(nationalRegistration: string): Promise<Customer> {
+    try {
+      const customerRepository = getRepository(Customer);
+
+      const customerFound = await customerRepository.findOne({
+        nationalRegistration,
+        isActive: true,
+      });
+
+      return customerFound;
+    } catch (error) {
       throw new HttpError(500, ServerCodeErrorEnum.INTERNAL_SERVER_ERROR, 'INTERNAL SERVER ERROR', null, error);
     }
   }

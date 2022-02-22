@@ -1,0 +1,4 @@
+export enum CodeErrorEnum {
+    NATIONAL_REGISTRATION_DUPLICATED = 1001,
+    CUSTOMER_NOT_FOUND = 1002,
+};

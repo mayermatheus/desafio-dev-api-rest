@@ -14,6 +14,11 @@ class Config {
       port: parseInt(process.env.HTTP_PORT, 10) || 3000,
     },
   };
+
+  public static BANK_INFO = {
+    agencyNumber: Number(process.env.AGENCY_NUMBER) || 0,
+    defaultLimitPerDaily: Number(process.env.LIMIT_PER_DAILY) || 2000,
+  }
 }
 
 export default Config;

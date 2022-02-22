@@ -1,9 +1,11 @@
+import Account from '@domain/account/v1/entities/account';
 import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity('customer')
@@ -19,6 +21,9 @@ export default class Customer {
 
   @Column({ name: 'is_active', select: false })
   isActive: boolean;
+
+  @OneToMany(() => Account, (account) => account.customer)
+  accounts: Account[];
 
   @CreateDateColumn({ name: 'created_at', select: false })
   createdAt: Date;
